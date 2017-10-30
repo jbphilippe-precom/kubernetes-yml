@@ -1,0 +1,80 @@
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  annotations:
+    deployment.kubernetes.io/desired-replicas: "1"
+    deployment.kubernetes.io/max-replicas: "2"
+    deployment.kubernetes.io/revision: "3"
+  generation: 1
+  #labels:
+  #  name: arch.prod.pod.redmine2
+  #  pod-template-hash: "603312766"
+  #  version: "1"
+  name: arch.prod.depl.redmine2-603312766
+  namespace: default
+  #ownerReferences:
+  #- apiVersion: extensions/v1beta1
+  #  blockOwnerDeletion: true
+  #  controller: true
+  #  kind: Deployment
+  #  name: arch.prod.depl.redmine
+  #resourceVersion: "37911244"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: arch.prod.pod.redmine2
+      version: "1"
+  template:
+    metadata:
+      labels:
+        name: arch.prod.pod.redmine2
+        version: "1"
+    spec:
+      volumes: 
+        - name: persistent-storage
+          gcePersistentDisk: 
+            pdName: redmine-disk
+            fsType: ext4
+      containers:
+      - env:
+        - name: REDMINE_DB_USERNAME
+          value: redmine
+        - name: REDMINE_DB_MYSQL
+          value: arch-prod-srv-mysql
+        - name: REDMINE_DB_PASSWORD
+          value: ChuuutTh1sIs@S3cret
+        image: eu.gcr.io/precom-obseques/arch/redmine:20170217-72dc30f-prod
+        imagePullPolicy: IfNotPresent
+        name: redmine
+        ports:
+        - containerPort: 3000
+          hostPort: 3001
+          protocol: TCP
+        #readinessProbe:
+        #  failureThreshold: 10
+        #  httpGet:
+        #    path: /login
+        #    port: 3001
+        #    scheme: HTTP
+        #  periodSeconds: 600
+        #  successThreshold: 1
+        #  timeoutSeconds: 600
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+          - name: persistent-storage
+            mountPath: "/usr/src/redmine/files/"
+            readOnly: false
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  fullyLabeledReplicas: 1
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
